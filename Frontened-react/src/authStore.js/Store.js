@@ -8,6 +8,7 @@ export const useAuth = create((set) => ({
   loading: false,
   error: null,
 
+  // LOGIN
   login: async (userCredWithRole) => {
 
     const { role, ...userCredObj } = userCredWithRole;
@@ -19,11 +20,8 @@ export const useAuth = create((set) => ({
         error: null
       });
 
-      // ✅ CHECKING API URL
-      console.log("API URL:", import.meta.env.VITE_API_URL);
-
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/common-api/login`,
+        "/common-api/login",
         userCredObj,
         {
           withCredentials: true
@@ -33,7 +31,8 @@ export const useAuth = create((set) => ({
       set({
         loading: false,
         isAuthenticated: true,
-        currentUser: res.data.payload
+        currentUser: res.data.payload,
+        error: null
       });
 
     } catch (err) {
@@ -46,9 +45,12 @@ export const useAuth = create((set) => ({
         currentUser: null,
         error: err.response?.data?.message || "Login failed"
       });
+
     }
+
   },
 
+  // LOGOUT
   logout: () => {
 
     set({
@@ -57,9 +59,10 @@ export const useAuth = create((set) => ({
       loading: false,
       error: null
     });
+
   },
 
-  // ✅ CHECK AUTH
+  // CHECK AUTH
   checkAuth: async () => {
 
     try {
@@ -68,10 +71,8 @@ export const useAuth = create((set) => ({
         loading: true
       });
 
-      console.log("CHECK AUTH API:", import.meta.env.VITE_API_URL);
-
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/common-api/check-auth`,
+        "/common-api/check-auth",
         {
           withCredentials: true,
           timeout: 5000
@@ -87,7 +88,6 @@ export const useAuth = create((set) => ({
 
     } catch (err) {
 
-      // Unauthorized
       if (err.response?.status === 401) {
 
         set({
@@ -98,15 +98,12 @@ export const useAuth = create((set) => ({
         });
 
         return;
+
       }
 
-      // Network/server issue
       if (!err.response) {
 
-        console.error(
-          "Network Error: Backend may not be running at",
-          import.meta.env.VITE_API_URL
-        );
+        console.error("Network Error");
 
         set({
           loading: false,
@@ -115,6 +112,7 @@ export const useAuth = create((set) => ({
         });
 
         return;
+
       }
 
       console.error("Auth check failed:", err);
@@ -123,7 +121,9 @@ export const useAuth = create((set) => ({
         loading: false,
         error: err.response?.data?.message || "Auth check failed"
       });
+
     }
+
   }
 
 }));
